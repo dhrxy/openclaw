@@ -28,7 +28,12 @@ function parseArgs(argv) {
   return args;
 }
 
-function walkPsd(root, maxDepth = 8) {
+function isPsdLikeFile(name) {
+  const lower = String(name || "").toLowerCase();
+  return lower.endsWith(".psd") || lower.endsWith(".psb");
+}
+
+function walkDesignFiles(root, maxDepth = 8) {
   const files = [];
   function walk(dir, depth) {
     if (depth > maxDepth) return;
@@ -43,7 +48,7 @@ function walkPsd(root, maxDepth = 8) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(full, depth + 1);
-      } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".psd")) {
+      } else if (entry.isFile() && isPsdLikeFile(entry.name)) {
         files.push(full);
       }
     }
@@ -108,8 +113,8 @@ function main() {
 
   const allEntries = [];
   for (const root of roots) {
-    const psdFiles = walkPsd(root, args.maxDepth || 8);
-    for (const psdPath of psdFiles) {
+    const designFiles = walkDesignFiles(root, args.maxDepth || 8);
+    for (const psdPath of designFiles) {
       try {
         allEntries.push(buildEntry(psdPath, root, previousByPath));
       } catch {
